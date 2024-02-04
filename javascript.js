@@ -26,21 +26,54 @@ class HashMap {
     if (this.hashMap[index] === undefined) {
       this.hashMap[index] = {
         head: {},
+        capacity: 16,
       };
     }
     let bucket = this.hashMap[index];
+    let currentCapacity = bucket.capacity * this.loadFactor;
 
     let headNode = bucket.head;
-    if (headNode.nextNode === null) {
+    if (headNode.nextNode === undefined) {
       const newNode = this.makeNode(key, value);
       bucket.head = newNode;
     } else {
       let currentNode = headNode;
+
+      let duplicate = false;
+      let currentKeys = Object.keys(currentNode);
+      currentKeys.forEach((currentKey) => {
+        if (currentKey === key) {
+          currentNode[key] = value;
+          duplicate = true;
+        }
+      });
+
+      let nodeCounter = 2;
       while (currentNode.nextNode) {
         currentNode = currentNode.nextNode;
+        currentKeys = Object.keys(currentNode);
+        currentKeys.forEach((currentKey) => {
+          if (currentKey === key) {
+            currentNode[key] = value;
+            duplicate = true;
+          }
+        });
+        nodeCounter += 1;
       }
-      currentNode.nextNode = this.makeNode(key, value, currentNode);
+
+      if (!duplicate) {
+        currentNode.nextNode = this.makeNode(key, value, currentNode);
+      }
+
+      if (currentCapacity === nodeCounter) {
+        bucket.capacity += 8;
+        currentCapacity = bucket.capacity * this.loadFactor;
+      }
     }
+  }
+
+  get(key) {
+    console.log(key);
   }
 
   makeNode(key, value = null, previousNode = null, nextNode = null) {
@@ -48,11 +81,12 @@ class HashMap {
   }
 }
 
-const hashMap = new HashMap(16, 0.75);
+const hashMap = new HashMap(0.75);
 
 hashMap.set('TestKey', 'TestValue');
-hashMap.set('TestForT', 'TestForTwoNodes');
-hashMap.set('TestForMul', 'TestForThreeNodes');
-hashMap.set('TestForMul', 'TestForOverwrite');
+hashMap.set('TestSet', 'TestValueToSet');
+hashMap.set('TestGet', 'TestValueToGet');
+
+hashMap.get('TestGet');
 
 console.log(hashMap.hashMap);
