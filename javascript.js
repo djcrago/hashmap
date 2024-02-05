@@ -73,7 +73,7 @@ class HashMap {
   }
 
   get(key) {
-    let value;
+    let value = null;
 
     const hMap = this.hashMap;
     hMap.forEach((bucket) => {
@@ -84,6 +84,17 @@ class HashMap {
           value = currentNode[key];
         }
       });
+      if (!value) {
+        while (currentNode.nextNode) {
+          currentNode = currentNode.nextNode;
+          let currentKeys = Object.keys(currentNode);
+          currentKeys.forEach((currentKey) => {
+            if (currentKey === key) {
+              value = currentNode[key];
+            }
+          });
+        }
+      }
     });
 
     return value;
@@ -99,7 +110,10 @@ const hashMap = new HashMap(0.75);
 hashMap.set('TestKey', 'TestValue');
 hashMap.set('TestSet', 'TestValueToSet');
 hashMap.set('TestGet', 'TestValueToGet');
+hashMap.set('TestForMul', 'TestGetSecondNode');
+hashMap.set('TestForT', 'TestGetThirdNode');
 
 console.log(hashMap.get('TestGet'));
+console.log(hashMap.get('TestForT'));
 
 console.log(hashMap.hashMap);
