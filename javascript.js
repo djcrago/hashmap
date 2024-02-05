@@ -73,7 +73,7 @@ class HashMap {
   }
 
   get(key) {
-    let nodeWithKey = this.findX(key, 'node');
+    let nodeWithKey = this.findX('node', key);
 
     if (nodeWithKey) {
       return nodeWithKey[key];
@@ -82,7 +82,7 @@ class HashMap {
   }
 
   has(key) {
-    if (this.findX(key, 'node')) {
+    if (this.findX('node', key)) {
       return true;
     }
     return false;
@@ -91,11 +91,10 @@ class HashMap {
   remove(key) {
     let removed = false;
 
-    // const bucketWithNode = this.findBucket(key);
-    const bucketWithNode = this.findX(key, 'bucket');
+    const bucketWithNode = this.findX('bucket', key);
     const bucketIndex = this.hashMap.indexOf(bucketWithNode);
 
-    let nodeWithKey = this.findX(key, 'node');
+    let nodeWithKey = this.findX('node', key);
 
     if (nodeWithKey) {
       // if only node in bucket, remove entire bucket
@@ -141,39 +140,24 @@ class HashMap {
   }
 
   keys() {
-    const arrayOfKeys = [];
-
-    const hMap = this.hashMap;
-    hMap.forEach((bucket) => {
-      let currentNode = bucket.head;
-      let currentKeys = Object.keys(currentNode);
-      currentKeys.forEach((currentKey) => {
-        if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
-          arrayOfKeys.push(currentKey);
-        }
-      });
-      while (currentNode.nextNode) {
-        currentNode = currentNode.nextNode;
-        currentKeys = Object.keys(currentNode);
-        currentKeys.forEach((currentKey) => {
-          if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
-            arrayOfKeys.push(currentKey);
-          }
-        });
-      }
-    });
+    const arrayOfKeys = this.findX('keys');
 
     return arrayOfKeys;
   }
+
+  values() {}
 
   makeNode(key, value = null, previousNode = null, nextNode = null) {
     return { [key]: value, previousNode, nextNode };
   }
 
-  findX(key, X) {
+  findX(x, key) {
     let find;
-    if (X === 'node') {
+    if (x === 'node') {
       find = null;
+    }
+    if (x === 'keys') {
+      find = [];
     }
 
     const hMap = this.hashMap;
@@ -181,23 +165,45 @@ class HashMap {
       let currentNode = bucket.head;
       let currentKeys = Object.keys(currentNode);
       currentKeys.forEach((currentKey) => {
+        if (x === 'keys') {
+          if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
+            find.push(currentKey);
+          }
+        }
         if (currentKey === key) {
-          if (X === 'bucket') {
+          if (x === 'bucket') {
             find = bucket;
-          } else if (X === 'node') {
+          } else if (x === 'node') {
             find = currentNode;
+          } else if (x === 'keys') {
+            find.push(currentKey);
           }
         }
       });
-      if (!find) {
+      if (x === 'keys') {
         while (currentNode.nextNode) {
           currentNode = currentNode.nextNode;
           currentKeys = Object.keys(currentNode);
           currentKeys.forEach((currentKey) => {
+            if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
+              find.push(currentKey);
+            }
+          });
+        }
+      } else if (!find) {
+        while (currentNode.nextNode) {
+          currentNode = currentNode.nextNode;
+          currentKeys = Object.keys(currentNode);
+          currentKeys.forEach((currentKey) => {
+            if (x === 'keys') {
+              if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
+                find.push(currentKey);
+              }
+            }
             if (currentKey === key) {
-              if (X === 'bucket') {
+              if (x === 'bucket') {
                 find = bucket;
-              } else if (X === 'node') {
+              } else if (x === 'node') {
                 find = currentNode;
               }
             }
