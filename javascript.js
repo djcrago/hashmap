@@ -145,7 +145,24 @@ class HashMap {
     return arrayOfKeys;
   }
 
-  values() {}
+  values() {
+    const arrayOfValues = this.findX('values');
+
+    return arrayOfValues;
+  }
+
+  entries() {
+    const arrayOfKeys = this.keys();
+    const arrayOfValues = this.values();
+
+    let entries = [];
+
+    for (let i = 0; i < arrayOfKeys.length; i += 1) {
+      entries.push([arrayOfKeys[i], arrayOfValues[i]]);
+    }
+
+    return entries;
+  }
 
   makeNode(key, value = null, previousNode = null, nextNode = null) {
     return { [key]: value, previousNode, nextNode };
@@ -156,7 +173,7 @@ class HashMap {
     if (x === 'node') {
       find = null;
     }
-    if (x === 'keys') {
+    if (x === 'keys' || x === 'values') {
       find = [];
     }
 
@@ -168,6 +185,11 @@ class HashMap {
         if (x === 'keys') {
           if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
             find.push(currentKey);
+          }
+        }
+        if (x === 'values') {
+          if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
+            find.push(currentNode[currentKey]);
           }
         }
         if (currentKey === key) {
@@ -187,6 +209,16 @@ class HashMap {
           currentKeys.forEach((currentKey) => {
             if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
               find.push(currentKey);
+            }
+          });
+        }
+      } else if (x === 'values') {
+        while (currentNode.nextNode) {
+          currentNode = currentNode.nextNode;
+          currentKeys = Object.keys(currentNode);
+          currentKeys.forEach((currentKey) => {
+            if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
+              find.push(currentNode[currentKey]);
             }
           });
         }
@@ -240,5 +272,9 @@ console.log(hashMap.length());
 // hashMap.set('TestClear', 'TestForAnActualNewHashMap');
 
 console.log(hashMap.keys());
+
+console.log(hashMap.values());
+
+console.log(hashMap.entries());
 
 console.log(hashMap.hashMap);
