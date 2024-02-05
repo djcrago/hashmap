@@ -48,7 +48,6 @@ class HashMap {
         }
       });
 
-      let nodeCounter = 2;
       while (currentNode.nextNode) {
         currentNode = currentNode.nextNode;
         currentKeys = Object.keys(currentNode);
@@ -58,14 +57,15 @@ class HashMap {
             duplicate = true;
           }
         });
-        nodeCounter += 1;
       }
 
       if (!duplicate) {
         currentNode.nextNode = this.makeNode(key, value, currentNode);
       }
 
-      if (currentCapacity === nodeCounter) {
+      const numberOfNodes = this.length();
+
+      if (currentCapacity === numberOfNodes) {
         bucket.capacity += 8;
         currentCapacity = bucket.capacity * this.loadFactor;
       }
@@ -73,7 +73,108 @@ class HashMap {
   }
 
   get(key) {
-    let value = null;
+    let nodeWithKey = this.findX(key, 'node');
+
+    if (nodeWithKey) {
+      return nodeWithKey[key];
+    }
+    return null;
+  }
+
+  has(key) {
+    if (this.findX(key, 'node')) {
+      return true;
+    }
+    return false;
+  }
+
+  remove(key) {
+    let removed = false;
+
+    // const bucketWithNode = this.findBucket(key);
+    const bucketWithNode = this.findX(key, 'bucket');
+    const bucketIndex = this.hashMap.indexOf(bucketWithNode);
+
+    let nodeWithKey = this.findX(key, 'node');
+
+    if (nodeWithKey) {
+      // if only node in bucket, remove entire bucket
+      if (nodeWithKey.previousNode === null && nodeWithKey.nextNode === null) {
+        this.hashMap.splice(bucketIndex, 1);
+        removed = true;
+        // if node is head node
+      } else if (nodeWithKey.previousNode === null) {
+        bucketWithNode.head = nodeWithKey.nextNode;
+        removed = true;
+        // if node is tail node
+      } else if (nodeWithKey.nextNode === null) {
+        nodeWithKey.previousNode.nextNode = null;
+        removed = true;
+      } else if (nodeWithKey.previousNode && nodeWithKey.nextNode) {
+        nodeWithKey.previousNode.nextNode = nodeWithKey.nextNode;
+        nodeWithKey.nextNode.previousNode = nodeWithKey.previousNode;
+        removed = true;
+      }
+    }
+
+    return removed;
+  }
+
+  length() {
+    let numberOfKeys = 0;
+
+    const hMap = this.hashMap;
+    hMap.forEach((bucket) => {
+      let currentNode = bucket.head;
+      numberOfKeys += 1;
+      while (currentNode.nextNode) {
+        currentNode = currentNode.nextNode;
+        numberOfKeys += 1;
+      }
+    });
+
+    return numberOfKeys;
+  }
+
+  clear() {
+    this.hashMap = [];
+  }
+
+  keys() {
+    const arrayOfKeys = [];
+
+    const hMap = this.hashMap;
+    hMap.forEach((bucket) => {
+      let currentNode = bucket.head;
+      let currentKeys = Object.keys(currentNode);
+      currentKeys.forEach((currentKey) => {
+        if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
+          arrayOfKeys.push(currentKey);
+        }
+      });
+      while (currentNode.nextNode) {
+        currentNode = currentNode.nextNode;
+        currentKeys = Object.keys(currentNode);
+        currentKeys.forEach((currentKey) => {
+          if (currentKey !== 'previousNode' && currentKey !== 'nextNode') {
+            arrayOfKeys.push(currentKey);
+          }
+        });
+      }
+    });
+
+    return arrayOfKeys;
+  }
+
+  makeNode(key, value = null, previousNode = null, nextNode = null) {
+    return { [key]: value, previousNode, nextNode };
+  }
+
+  findX(key, X) {
+    let find;
+    if (X === 'node') {
+      find = null;
+    }
 
     const hMap = this.hashMap;
     hMap.forEach((bucket) => {
@@ -81,27 +182,31 @@ class HashMap {
       let currentKeys = Object.keys(currentNode);
       currentKeys.forEach((currentKey) => {
         if (currentKey === key) {
-          value = currentNode[key];
+          if (X === 'bucket') {
+            find = bucket;
+          } else if (X === 'node') {
+            find = currentNode;
+          }
         }
       });
-      if (!value) {
+      if (!find) {
         while (currentNode.nextNode) {
           currentNode = currentNode.nextNode;
-          let currentKeys = Object.keys(currentNode);
+          currentKeys = Object.keys(currentNode);
           currentKeys.forEach((currentKey) => {
             if (currentKey === key) {
-              value = currentNode[key];
+              if (X === 'bucket') {
+                find = bucket;
+              } else if (X === 'node') {
+                find = currentNode;
+              }
             }
           });
         }
       }
     });
 
-    return value;
-  }
-
-  makeNode(key, value = null, previousNode = null, nextNode = null) {
-    return { [key]: value, previousNode, nextNode };
+    return find;
   }
 }
 
@@ -112,8 +217,22 @@ hashMap.set('TestSet', 'TestValueToSet');
 hashMap.set('TestGet', 'TestValueToGet');
 hashMap.set('TestForMul', 'TestGetSecondNode');
 hashMap.set('TestForT', 'TestGetThirdNode');
+hashMap.set('TestRemove', 'TestRemovingANodeAndItsBucket');
+hashMap.set('TestLength', 'TestLengthOfSix');
 
 console.log(hashMap.get('TestGet'));
 console.log(hashMap.get('TestForT'));
+
+console.log(hashMap.has('Test'));
+
+console.log(hashMap.remove('TestKey'));
+
+console.log(hashMap.length());
+
+// hashMap.clear();
+// console.log(hashMap.hashMap);
+// hashMap.set('TestClear', 'TestForAnActualNewHashMap');
+
+console.log(hashMap.keys());
 
 console.log(hashMap.hashMap);
